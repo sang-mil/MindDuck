@@ -1,8 +1,10 @@
-chrome.runtime.onMessage.addListener((msg,sender,sendResponse)=>{
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse)=>{
 
 if(msg.type==="AI_QUERY"){
 
-handleAI(msg.text).then(sendResponse)
+handleAI(msg.text).then(res=>{
+sendResponse(res)
+})
 
 return true
 
@@ -12,25 +14,23 @@ return true
 
 async function handleAI(text){
 
-const settings = await getSettings()
+const data = await chrome.storage.local.get([
+"api_key",
+"api_url",
+"model"
+])
 
-const res = await fetch(settings.url,{
+try{
+
+const response = await fetch(data.api_url,{
 method:"POST",
 headers:{
 "Content-Type":"application/json",
-"Authorization":`Bearer ${settings.key}`
+"Authorization":"Bearer "+data.api_key
 },
 body:JSON.stringify({
-model:settings.model,
+model:data.model,
 messages:[
-{
-role:"system",
-content:`You are MindDuck.
-
-A curious helpful duck that helps users think.
-
-Always answer shortly and sometimes start with 🦆`
-},
 {
 role:"user",
 content:text
@@ -39,28 +39,18 @@ content:text
 })
 })
 
-const data = await res.json()
+const json = await response.json()
 
-return data.choices?.[0]?.message?.content || "Duck found nothing."
-
+if(json.choices){
+return json.choices[0].message.content
 }
 
-function getSettings(){
+return JSON.stringify(json)
 
-return new Promise(resolve=>{
+}catch(e){
 
-chrome.storage.local.get(
-["api_key","api_url","model"],
-(r)=>{
+return "AI error 🦆"
 
-resolve({
-key:r.api_key,
-url:r.api_url,
-model:r.model
-})
-
-})
-
-})
+}
 
 }
