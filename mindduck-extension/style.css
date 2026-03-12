@@ -1,0 +1,27 @@
+body{
+width:300px;
+font-family:sans-serif;
+}
+
+textarea{
+width:100%;
+height:100px;
+}
+
+input{
+width:100%;
+margin-top:5px;
+}
+
+button{
+margin-top:5px;
+width:100%;
+}
+
+#mindduck{
+position:fixed;
+font-size:40px;
+z-index:999999;
+transition:all 2s linear;
+cursor:pointer;
+}
